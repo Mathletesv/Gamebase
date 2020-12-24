@@ -10,7 +10,7 @@ app.listen(8000);
 function response(req, res) {
 	let file = "";
 	if (req.url == "/") {
-		file = __dirname + '/index.html';
+		file = __dirname + '/client/index.html';
 	} else {
 		file = __dirname + req.url;
 	}
