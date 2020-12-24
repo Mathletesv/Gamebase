@@ -1,7 +1,5 @@
 const socket = io.connect();
 let thisid;
-let x = 250, y = 250;
-let xvel = 0, yvel = 0;
 let players = {};
 let time = new Date();
 let delta = 0;
@@ -15,23 +13,25 @@ function update(input) {
 		if (id == thisid) {
 			ctx.fillStyle = "green";
 			ctx.beginPath();
-			ctx.rect(coords[0], coords[1], 20, 20);
+			ctx.rect(coords["x"], coords["y"], 20, 20);
 			ctx.fill();
 			ctx.fillStyle = "black";
 		}
 		else {
 			ctx.beginPath();
-			ctx.fillRect(coords[0], coords[1], 20, 20);
+			ctx.fillRect(coords["x"], coords["y"], 20, 20);
 		}
 	}
 }
 
 function ticker() {
 	delta = (new Date() - time) / 1000;
-	x += xvel * delta;
+	/*x += xvel * delta;
+	x = Math.max(Math.min(480, x), 0);
 	y += yvel * delta;
+	y = Math.max(Math.min(480, y), 0);*/
 	time = new Date();
-	socket.emit("tick", x, y, thisid, update);
+	socket.emit("tick", delta, thisid, update);
 	requestAnimationFrame(ticker);
 }
 
@@ -46,25 +46,25 @@ socket.emit("addPlayer", getId);
 document.addEventListener("keydown", function(e) {
 	switch (e.key) {
 		case "ArrowUp":
-			yvel = -speed;
-			break;
+			socket.emit("keydown", thisid, "up");
+			return;
 		case "ArrowDown":
-			yvel = speed;
-			break;
+			socket.emit("keydown", thisid, "down");
+			return;
 		case "ArrowRight":
-			xvel = speed;
-			break;
+			socket.emit("keydown", thisid, "right");
+			return;
 		case "ArrowLeft":
-			xvel = -speed;
-			break;
+			socket.emit("keydown", thisid, "left");
+			return;
 	}
 })
 
 document.addEventListener("keyup", function(e) {
 	if (e.key == "ArrowUp" || e.key == "ArrowDown") {
-		yvel = 0;
+		socket.emit("keyup", thisid, "vertical");
 	}
 	if (e.key == "ArrowLeft" || e.key == "ArrowRight") {
-		xvel = 0;
+		socket.emit("keyup", thisid, "horizontal");
 	}
 })
