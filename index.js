@@ -62,6 +62,18 @@ io.on("connection", function(socket) {
 			case "left":
 				players[id]["xvel"] = -speed;
 				return;
+			case "w":
+				players[id]["yvel"] = -speed;
+				return;
+			case "s":
+				players[id]["yvel"] = speed;
+				return;
+			case "d":
+				players[id]["xvel"] = speed;
+				return;
+			case "a":
+				players[id]["xvel"] = -speed;
+				return;
 		}
 	});
 
