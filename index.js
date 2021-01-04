@@ -28,6 +28,10 @@ players = {}
 
 io.on("connection", function(socket) {
 	socket.on("tick", function(delta, id, update) {
+		if (!(id in players)) {
+			socket.emit("playerNotFound");
+			return;
+		}
 		player = players[id];
 		player["x"] += player["xvel"] * delta;
 		player["x"] = Math.max(Math.min(480, player["x"]), 0)
@@ -39,6 +43,7 @@ io.on("connection", function(socket) {
 	
 	socket.on("addPlayer", function(callback) {
 		id = (parseInt(id) + 1).toString();
+		socket.userid = id;
 		players[id] = {
 			"x": 250,
 			"y": 250,
@@ -49,6 +54,10 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("keydown", function(id, key) {
+		if (!(id in players)) {
+			socket.emit("playerNotFound");
+			return;
+		}
 		switch (key) {
 			case "up":
 				players[id]["yvel"] = -speed;
@@ -62,23 +71,19 @@ io.on("connection", function(socket) {
 			case "left":
 				players[id]["xvel"] = -speed;
 				return;
-			case "w":
-				players[id]["yvel"] = -speed;
-				return;
-			case "s":
-				players[id]["yvel"] = speed;
-				return;
-			case "d":
-				players[id]["xvel"] = speed;
-				return;
-			case "a":
-				players[id]["xvel"] = -speed;
-				return;
 		}
 	});
 
 	socket.on("keyup", function(id, key) {
+		if (!(id in players)) {
+			socket.emit("playerNotFound");
+			return;
+		}
 		if (key == "vertical") players[id]["yvel"] = 0;
 		else if (key == "horizontal") players[id]["xvel"] = 0;
 	});
+
+	socket.on("disconnect", function() {
+		delete players[socket.userid];
+	})
 })
