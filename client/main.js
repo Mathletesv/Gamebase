@@ -5,22 +5,37 @@ let time = new Date();
 let delta = 0;
 let speed = 50;
 let ctx = document.getElementById("game").getContext("2d");
+const downevents = {
+	"ArrowUp": "up",
+	"ArrowDown": "down",
+	"ArrowLeft": "left",
+	"ArrowRight": "right",
+	"w": "up",
+	"a": "left",
+	"s": "down",
+	"d": "right",
+	"z": "shape",
+	"j": "shape"
+}
 
 function update(input) {
 	players = input;
 	ctx.clearRect(0, 0, 500, 500);
-	for (let [id, coords] of Object.entries(players)) {
+	for (let id in players) {
 		if (id == thisid) {
 			ctx.fillStyle = "green";
-			ctx.beginPath();
-			ctx.rect(coords["x"], coords["y"], 20, 20);
-			ctx.fill();
-			ctx.fillStyle = "black";
 		}
 		else {
-			ctx.beginPath();
-			ctx.fillRect(coords["x"], coords["y"], 20, 20);
+			ctx.fillStyle = "black";
 		}
+		ctx.beginPath();
+		if (players[id].shape == "circle") {
+			ctx.arc(players[id].x, players[id].y, 10, 0, Math.PI * 2);
+		}
+		else if (players[id].shape == "square") {
+			ctx.rect(players[id].x - 10, players[id].y - 10, 20, 20);
+		}
+		ctx.fill();
 	}
 }
 
@@ -44,31 +59,8 @@ socket.emit("addPlayer", getId);
 requestAnimationFrame(ticker);
 
 document.addEventListener("keydown", function(e) {
-	switch (e.key) {
-		case "ArrowUp":
-			socket.emit("keydown", thisid, "up");
-			return;
-		case "ArrowDown":
-			socket.emit("keydown", thisid, "down");
-			return;
-		case "ArrowRight":
-			socket.emit("keydown", thisid, "right");
-			return;
-		case "ArrowLeft":
-			socket.emit("keydown", thisid, "left");
-			return;
-		case "w":
-			socket.emit("keydown", thisid, "up");
-			return;
-		case "s":
-			socket.emit("keydown", thisid, "down");
-			return;
-		case "d":
-			socket.emit("keydown", thisid, "right");
-			return;
-		case "a":
-			socket.emit("keydown", thisid, "left");
-			return;
+	if (e.key in downevents) {
+		eval('socket.emit(\"keydown\", thisid, \"' + downevents[e.key] + '\");');
 	}
 })
 
@@ -81,6 +73,8 @@ document.addEventListener("keyup", function(e) {
 	}
 })
 
-socket.on("playerNotFound", function() {
-	socket.emit("addPlayer", getId);
-})
+setTimeout(function() {
+	socket.on("playerNotFound", function() {
+		socket.emit("addPlayer", getId);
+	});
+}, 1000);

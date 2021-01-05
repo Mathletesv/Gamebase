@@ -34,9 +34,9 @@ io.on("connection", function(socket) {
 		}
 		player = players[id];
 		player["x"] += player["xvel"] * delta;
-		player["x"] = Math.max(Math.min(480, player["x"]), 0)
+		player["x"] = Math.max(Math.min(490, player["x"]), 10)
 		player["y"] += player["yvel"] * delta;
-		player["y"] = Math.max(Math.min(480, player["y"]), 0)
+		player["y"] = Math.max(Math.min(490, player["y"]), 10)
 		players[id] = player;
 		update(players);
 	});
@@ -49,6 +49,7 @@ io.on("connection", function(socket) {
 			"y": 250,
 			"xvel": 0,
 			"yvel": 0,
+			"shape": "square"
 			};
 		callback(id);
 	});
@@ -71,6 +72,8 @@ io.on("connection", function(socket) {
 			case "left":
 				players[id]["xvel"] = -speed;
 				return;
+			case "shape":
+				players[id]["shape"] = (players[id]["shape"] == "circle" ? "square" : "circle");
 		}
 	});
 
