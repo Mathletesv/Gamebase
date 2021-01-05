@@ -1,9 +1,5 @@
 const socket = io.connect();
 let thisid;
-let players = {};
-let time = new Date();
-let delta = 0;
-let speed = 50;
 let ctx = document.getElementById("game").getContext("2d");
 const downevents = {
 	"ArrowUp": "up",
@@ -18,8 +14,7 @@ const downevents = {
 	"j": "shape"
 }
 
-function update(input) {
-	players = input;
+function update(players) {
 	ctx.clearRect(0, 0, 500, 500);
 	for (let id in players) {
 		if (id == thisid) {
@@ -39,24 +34,12 @@ function update(input) {
 	}
 }
 
-function ticker() {
-	delta = (new Date() - time) / 1000;
-	/*x += xvel * delta;
-	x = Math.max(Math.min(480, x), 0);
-	y += yvel * delta;
-	y = Math.max(Math.min(480, y), 0);*/
-	time = new Date();
-	socket.emit("tick", delta, thisid, update);
-	requestAnimationFrame(ticker);
-}
-
 function getId(id) {
 	thisid = id;
 	console.log(id);
 }
 
 socket.emit("addPlayer", getId);
-requestAnimationFrame(ticker);
 
 document.addEventListener("keydown", function(e) {
 	if (e.key in downevents) {
@@ -78,3 +61,7 @@ setTimeout(function() {
 		socket.emit("addPlayer", getId);
 	});
 }, 1000);
+
+socket.on("tick", function (data) {
+	update(data);
+})

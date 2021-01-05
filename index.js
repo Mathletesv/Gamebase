@@ -1,7 +1,7 @@
 const app = require('http').createServer(response);
 const fs = require('fs');
 const io = require('socket.io')(app);
-const speed = 50;
+const speed = 15s0;
 
 let id = "0";
 
@@ -24,22 +24,11 @@ function response(req, res) {
 	})
 };
 
-players = {}
+let players = {}
+let time = new Date();
+let delta;
 
 io.on("connection", function(socket) {
-	socket.on("tick", function(delta, id, update) {
-		if (!(id in players)) {
-			socket.emit("playerNotFound");
-			return;
-		}
-		player = players[id];
-		player["x"] += player["xvel"] * delta;
-		player["x"] = Math.max(Math.min(490, player["x"]), 10)
-		player["y"] += player["yvel"] * delta;
-		player["y"] = Math.max(Math.min(490, player["y"]), 10)
-		players[id] = player;
-		update(players);
-	});
 	
 	socket.on("addPlayer", function(callback) {
 		id = (parseInt(id) + 1).toString();
@@ -89,4 +78,21 @@ io.on("connection", function(socket) {
 	socket.on("disconnect", function() {
 		delete players[socket.userid];
 	})
-})
+});
+
+function tick() {
+	delta = (new Date() - time) / 1000;
+	for (let id in players) {
+		player = players[id];
+		player["x"] += player["xvel"] * delta;
+		player["x"] = Math.max(Math.min(490, player["x"]), 10);
+		player["y"] += player["yvel"] * delta;
+		player["y"] = Math.max(Math.min(490, player["y"]), 10);
+	}
+	io.emit("tick", players);
+	time = new Date();
+}
+
+setInterval(function () {
+	tick();
+}, 15);
