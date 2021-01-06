@@ -1,7 +1,7 @@
 const app = require('http').createServer(response);
 const fs = require('fs');
 const io = require('socket.io')(app);
-const speed = 15s0;
+const speed = 150;
 
 let id = "0";
 
