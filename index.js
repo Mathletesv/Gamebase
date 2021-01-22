@@ -1,9 +1,8 @@
 const app = require('http').createServer(response);
 const fs = require('fs');
 const io = require('socket.io')(app);
-const speed = 150;
-
-let id = "0";
+const { v4: uuidv4 } = require('uuid');
+const speed = 200;
 
 app.listen(8000);
 
@@ -27,20 +26,56 @@ function response(req, res) {
 let players = {}
 let time = new Date();
 let delta;
+let playerCount = 0;
 
 io.on("connection", function(socket) {
 	
 	socket.on("addPlayer", function(callback) {
-		id = (parseInt(id) + 1).toString();
+		if (socket.userid in players) {
+			return;
+		}
+		let id = uuidv4();
 		socket.userid = id;
 		players[id] = {
-			"x": 250,
-			"y": 250,
+			"x": 800,
+			"y": 450,
 			"xvel": 0,
 			"yvel": 0,
-			"shape": "square"
-			};
+			"shape": "square",
+			"name": "Unnamed",
+			"chat": "",
+			"color": "black"
+		};
 		callback(id);
+		playerCount++;
+		console.log(playerCount);
+	});
+
+	socket.on("chatMsg", function(id, msg) {
+		if (!(id in players)) {
+			socket.emit("playerNotFound");
+			return;
+		}
+		players[id]["chat"] = msg;
+	})
+
+	socket.on("colorChange", function(id, color) {
+		if (!(id in players)) {
+			socket.emit("playerNotFound");
+			return;
+		}
+		if (color.toLowerCase() == "white" || color.toLowerCase() == "#ffffff") {
+			return;
+		}
+		players[id]["color"] = color;
+	})
+
+	socket.on("nameChange", function (id, name) {
+		if (!(id in players)) {
+			socket.emit("playerNotFound");
+			return;
+		}
+		players[id]["name"] = name;
 	});
 
 	socket.on("keydown", function(id, key) {
@@ -76,8 +111,9 @@ io.on("connection", function(socket) {
 	});
 
 	socket.on("disconnect", function() {
+		playerCount--;
 		delete players[socket.userid];
-	})
+	});
 });
 
 function tick() {
@@ -85,11 +121,11 @@ function tick() {
 	for (let id in players) {
 		player = players[id];
 		player["x"] += player["xvel"] * delta;
-		player["x"] = Math.max(Math.min(490, player["x"]), 10);
+		player["x"] = Math.max(Math.min(1580, player["x"]), 20);
 		player["y"] += player["yvel"] * delta;
-		player["y"] = Math.max(Math.min(490, player["y"]), 10);
+		player["y"] = Math.max(Math.min(880, player["y"]), 20);
 	}
-	io.emit("tick", players);
+	io.emit("tick", Object.values(players));
 	time = new Date();
 }
 
